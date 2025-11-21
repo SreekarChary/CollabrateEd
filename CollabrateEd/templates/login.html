@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="login-bg">
-  <div class="login-card p-4 shadow rounded">
+  <div class="login-card p-5 shadow rounded">
     <h3 class="mb-4 text-center brand-title">COLLABRATEED</h3>
     
     {% if error %}
@@ -30,7 +30,7 @@
       </div>
       <button type="submit" class="btn btn-primary w-100 btn-lg">LOG IN</button>
     </form>
-    <div class="text-center mt-3">
+    <div class="text-center mt-4">
       <small class="text-muted">Don't have an account?</small><br>
       <a href="{{ url_for('register') }}" class="text-decoration-none">Create one</a>
     </div>

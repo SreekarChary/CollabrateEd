@@ -7,7 +7,7 @@
 
   <div class="col-md-6">
     <div class="card">
-      <div class="card-header card-header-custom">Team Chats</div>
+      <div class="card-header card-header-custom">Team Chats (Recent)</div>
       <div class="card-body">
         {% if messages %}
           <ul class="list-group">
@@ -21,7 +21,7 @@
             {% endfor %}
           </ul>
         {% else %}
-          <p class="text-muted">No Team Chat Available</p>
+          <p class="text-muted">No Recent Team Chat Messages</p>
         {% endif %}
       </div>
     </div>
@@ -29,23 +29,25 @@
 
   <div class="col-md-6">
     <div class="card">
-      <div class="card-header card-header-custom">Your Projects</div>
+      <div class="card-header card-header-custom">Your Personal & Team Projects</div>
       <div class="card-body">
-        {% if personal_projects %}
+        {% if personal_projects or team_projects %}
           <ul class="list-group">
             {% for project in personal_projects %}
               <li class="list-group-item d-flex justify-content-between align-items-center">
                 <a href="{{ url_for('view_project', project_id=project.id) }}">{{ project.name }}</a>
-                {% if project.is_team %}
-                  <span class="badge bg-primary">Team</span>
-                {% else %}
-                  <span class="badge bg-secondary">Personal</span>
-                {% endif %}
+                <span class="badge bg-secondary">Personal</span>
+              </li>
+            {% endfor %}
+            {% for project in team_projects %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <a href="{{ url_for('team_projects') }}">{{ project.name }}</a>
+                <span class="badge bg-primary">Team</span>
               </li>
             {% endfor %}
           </ul>
         {% else %}
-          <p class="text-muted">Manage from your profile.</p>
+          <p class="text-muted">No projects found. Create one in Team Projects or manage from your profile.</p>
         {% endif %}
       </div>
     </div>
@@ -67,7 +69,7 @@
             {% endfor %}
           </ul>
         {% else %}
-          <p class="text-muted">None now.</p>
+          <p class="text-muted">No public projects available to join right now.</p>
         {% endif %}
       </div>
     </div>

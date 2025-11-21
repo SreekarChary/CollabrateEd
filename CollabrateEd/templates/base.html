@@ -5,33 +5,62 @@
   <title>{{ title or "CollabrateEd" }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- Poppins is now included in style.css -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <div class="d-flex">
-    <nav class="sidebar p-3">
-      <h4 class="mb-4 text-center">COLLABRATEED</h4>
-      <ul class="nav flex-column">
-        <li class="nav-item">
-          <a href="/dashboard" class="nav-link"><i class="bi bi-grid-fill"></i> Dashboard</a>
-        </li>
-        <li class="nav-item">
-          <a href="/profile" class="nav-link"><i class="bi bi-person-fill"></i> Profile</a>
-        </li>
-        <li class="nav-item">
-          <a href="/team-projects" class="nav-link"><i class="bi bi-people-fill"></i> Team Projects</a>
-        </li>
-        <li class="nav-item mt-auto">
-          <a href="/logout" class="nav-link"><i class="bi bi-box-arrow-left"></i> Logout</a>
-        </li>
-      </ul>
+  <!-- Top Navigation Bar -->
+  <nav class="topbar">
+    <h4 class="brand-title-lg">COLLABRATEED</h4>
+  </nav>
+
+  <div class="main-layout">
+    <!-- Icon-Only Vertical Nav -->
+    <nav class="icon-nav flex-shrink-0">
+        <ul class="nav flex-column mb-auto">
+          <li class="nav-item">
+            <a href="/dashboard" class="nav-link" title="Dashboard"><i class="bi bi-grid-fill"></i></a>
+          </li>
+          <li class="nav-item">
+            <a href="/profile" class="nav-link" title="Profile"><i class="bi bi-person-fill"></i></a>
+          </li>
+          <li class="nav-item">
+            <a href="/team-projects" class="nav-link" title="Team Projects"><i class="bi bi-people-fill"></i></a>
+          </li>
+        </ul>
+        <ul class="nav flex-column mt-auto logout-link">
+          <li class="nav-item">
+            <a href="/logout" class="nav-link" title="Logout"><i class="bi bi-box-arrow-left"></i></a>
+          </li>
+        </ul>
     </nav>
     
-    <main class="main-panel flex-grow-1 p-4">
+    <!-- Main Content Panel -->
+    <main class="main-panel flex-grow-1">
       {% block content %}{% endblock %}
     </main>
   </div>
+  
+  <script>
+    // Highlight the active icon based on the current URL path
+    document.addEventListener('DOMContentLoaded', () => {
+        const path = window.location.pathname;
+        const navLinks = document.querySelectorAll('.icon-nav .nav-link');
+        
+        navLinks.forEach(link => {
+            if (path === link.getAttribute('href')) {
+                link.classList.add('active');
+            }
+        });
+        
+        // Handle sub-pages like /chat/<id> or /projects/<id>
+        if (path.startsWith('/chat') || path.startsWith('/team-projects')) {
+            document.querySelector('.icon-nav a[href="/team-projects"]').classList.add('active');
+        } else if (path.startsWith('/projects') && !path.startsWith('/team-projects')) {
+             document.querySelector('.icon-nav a[href="/dashboard"]').classList.add('active');
+        }
+    });
+  </script>
 </body>
 </html>

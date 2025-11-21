@@ -1,98 +1,194 @@
-/* CollabrateEd/static/style.css */
+/* CollabrateEd/static/style.css - Modern, Clean UI */
 
 /* 1. Root Variables & Font */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
 
 :root {
-  --primary-color: #4A90E2; /* A professional, modern blue */
-  --dark-color: #222B36;    /* A deep navy/charcoal */
+  --primary-color: #00BFA5; /* Mint Green for action/highlights */
+  --secondary-color: #5C6BC0; /* Soft Indigo Blue for secondary actions/badges */
   --light-color: #FFFFFF;
-  --bg-color: #F4F7F6;     /* A very light grey/off-white */
-  --border-color: #EAEAEA;
+  --bg-color: #F0F4F8;     /* Very Light Blue-Grey for main body background */
+  --card-bg: #FFFFFF;      /* White for cards and components */
+  --text-dark: #37474F;    /* Dark Charcoal for main text */
+  --text-muted: #90A4AE;
+  --border-color: #ECEFF1;
 }
 
 body {
   font-family: 'Poppins', sans-serif;
   background-color: var(--bg-color);
-  color: #333;
+  color: var(--text-dark);
+  display: flex; /* Ensure full-height layout */
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-/* 2. Login & Register Pages */
+/* 2. Layout Structure */
+.topbar {
+    background-color: var(--light-color);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    height: 66px;
+    display: flex;
+    align-items: center;
+}
+.brand-title-lg {
+    color: var(--text-dark);
+    font-weight: 600;
+    margin: 0;
+    font-size: 1.25rem;
+    padding-left: 20px;
+}
+
+.main-layout {
+    display: flex;
+    flex-grow: 1;
+}
+
+/* Icon-Only Vertical Nav */
+.icon-nav {
+  width: 65px;
+  background-color: var(--text-dark); /* Dark background for anchor */
+  padding: 10px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid var(--border-color);
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+.icon-nav .nav-link {
+  color: #CFD8DC; /* Light grey text */
+  text-align: center;
+  font-size: 1.5rem;
+  padding: 15px 0;
+  transition: all 0.3s ease;
+}
+.icon-nav .nav-link:hover, .icon-nav .nav-link.active {
+  background-color: var(--primary-color);
+  color: var(--light-color);
+}
+.icon-nav .logout-link .nav-link:hover {
+    background-color: #E57373; /* Red hover for logout */
+}
+
+.main-panel {
+  background-color: var(--bg-color);
+  padding: 1.5rem 2rem;
+  flex-grow: 1;
+}
+
+/* 3. Login & Register Pages */
 .login-bg {
   background-color: var(--bg-color);
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  padding: 1rem;
 }
 
 .login-card {
   width: 100%;
   max-width: 420px;
-  background-color: var(--light-color);
+  background-color: var(--card-bg);
   border: 1px solid var(--border-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
 }
-
-.brand-title {
-  color: var(--primary-color);
-  font-weight: 600;
-}
-
-/* 3. Main App Layout (from base.html) */
-.sidebar {
-  width: 260px;
-  min-height: 100vh;
-  background-color: var(--light-color);
-  border-right: 1px solid var(--border-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.sidebar .nav-link {
-  color: #555;
-  font-weight: 500;
-  border-radius: 6px;
-  margin-bottom: 4px;
-}
-.sidebar .nav-link:hover {
-  background-color: #f1f3f5;
-  color: var(--primary-color);
-}
-.sidebar .nav-link .bi {
-  margin-right: 12px;
-  font-size: 1.1rem;
-}
-.sidebar h4 {
-  color: var(--primary-color);
-  font-weight: 600;
-}
-
-.main-panel {
-  background-color: var(--bg-color);
+.login-card .brand-title {
+    color: var(--text-dark);
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 /* 4. Custom Components */
 .card {
+  background-color: var(--card-bg);
   border: 1px solid var(--border-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
-/* A custom header to replace bg-primary, etc. */
 .card-header-custom {
-  background-color: var(--light-color);
+  background-color: var(--bg-color);
   border-bottom: 1px solid var(--border-color);
   color: var(--primary-color);
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1rem;
+  padding: 1rem 1.25rem;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
 }
 
-/* Override default Bootstrap Button */
+/* List group items */
+.list-group-item {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-dark);
+}
+.list-group-item a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+.list-group-item a:hover {
+    text-decoration: underline;
+}
+
+/* Form Controls */
+.form-control, .form-select {
+    border-color: var(--border-color);
+    box-shadow: none !important;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(0, 191, 165, 0.25) !important;
+}
+
+/* Buttons */
 .btn-primary {
   background-color: var(--primary-color);
   border-color: var(--primary-color);
+  font-weight: 500;
 }
 .btn-primary:hover {
-  opacity: 0.9;
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
+  background-color: #00A38D;
+  border-color: #00A38D;
 }
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: var(--light-color);
+}
+.btn-success {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+.btn-success:hover {
+    background-color: #4D59A2;
+    border-color: #4D59A2;
+}
+
+/* Badges */
+.badge.bg-primary { background-color: var(--secondary-color) !important; }
+.badge.bg-secondary { background-color: var(--text-muted) !important; }
+
+/* Chat Box Styling */
+.chat-box {
+    height: 400px;
+    overflow-y: auto;
+    background-color: var(--bg-color) !important;
+    border-color: var(--border-color) !important;
+    border-radius: 8px;
+}
+
+/* Utility Text */
+.text-muted { color: var(--text-muted) !important; }
+.text-primary { color: var(--primary-color) !important; }
+.text-success { color: #28A745 !important; }
+.text-danger { color: #DC3545 !important; }
+.text-warning { color: #FFC107 !important; }
+.text-info { color: #17A2B8 !important; }
