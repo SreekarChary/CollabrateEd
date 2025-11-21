@@ -346,3 +346,90 @@ body {
 .text-danger { color: #DC3545 !important; }
 .text-warning { color: #FFC107 !important; }
 .text-info { color: #17A2B8 !important; }
+
+/* 5. Dark Mode Styles */
+.dark-mode {
+    --primary-color: #64B5F6; /* Lighter Blue */
+    --primary-hover: #42A5F5;
+    --secondary-color: #00E676; /* Brighter Green */
+    --light-color: #121212;   /* Very Dark Grey for light elements */
+    --bg-color: #1E1E1E;      /* Dark background */
+    --card-bg: #2D2D2D;       /* Darker cards */
+    --sidebar-bg: #212121;    /* Darkest sidebar */
+    --sidebar-link: #E0E0E0;  /* Light text */
+    --text-dark: #FFFFFF;     /* White main text */
+    --text-muted: #BDBDBD;
+    --border-color: #424242;
+    --chat-bg: #212121;
+}
+
+.dark-mode body {
+    color: var(--text-dark);
+}
+
+.dark-mode .sidebar {
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.dark-mode .top-header {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .user-profile {
+    color: var(--text-dark);
+}
+
+.dark-mode .main-panel {
+    background-color: var(--bg-color);
+}
+
+.dark-mode .login-bg {
+    background-color: var(--bg-color);
+}
+
+.dark-mode .login-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+}
+
+.dark-mode .card {
+    background-color: var(--card-bg);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .card-header-custom {
+    background-color: var(--primary-color) !important;
+}
+
+.dark-mode .list-group-item {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-dark);
+}
+
+.dark-mode .form-control, .dark-mode .form-select {
+    background-color: #424242;
+    color: var(--text-dark);
+    border-color: var(--border-color);
+}
+.dark-mode .form-control::placeholder {
+    color: var(--text-muted);
+}
+.dark-mode .form-control:focus, .dark-mode .form-select:focus {
+    background-color: #424242;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(100, 181, 246, 0.25) !important;
+}
+
+.dark-mode .chat-messages {
+    background-color: var(--chat-bg);
+}
+/* Ensure utility colors for chat are still readable */
+.dark-mode .text-primary { color: #64B5F6 !important; }
+.dark-mode .text-success { color: #81C784 !important; }
+.dark-mode .text-danger { color: #E57373 !important; }
+.dark-mode .text-warning { color: #FFD54F !important; }
+.dark-mode .text-info { color: #4FC3F7 !important; }

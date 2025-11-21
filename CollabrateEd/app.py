@@ -5,7 +5,7 @@ from flask_socketio import SocketIO, emit
 from models import db, User, Project, ProjectMember, Task, Note, Message
 from datetime import datetime
 from werkzeug.utils import secure_filename
-from sqlalchemy.orm import joinedload # <--- FIX: ADDED THIS IMPORT AND USED BELOW
+from sqlalchemy.orm import joinedload 
 
 # Ensure instance folder exists
 instance_path = os.path.join(os.path.dirname(__file__), 'instance')
@@ -27,7 +27,7 @@ db.init_app(app)
 CORS(app)
 socketio = SocketIO(app)
 
-# --- FIX: Load user before every request to populate g.user for base.html ---
+# --- Load user before every request to populate g.user for base.html ---
 @app.before_request
 def load_logged_in_user():
     """Loads the logged-in user from the database and sets it on the Flask 'g' object."""
@@ -74,6 +74,22 @@ def logout():
     session.clear()
     return redirect(url_for("login"))
 
+# --- New Dark Mode Routes ---
+@app.route("/settings")
+def settings():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    return render_template("settings.html")
+
+@app.route("/toggle_dark_mode", methods=["POST"])
+def toggle_dark_mode():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    # Toggle the dark_mode setting in the session
+    session['dark_mode'] = not session.get('dark_mode', False)
+    # Redirect back to the previous page, or settings page
+    return redirect(request.referrer or url_for("settings"))
+# ---------------------------
 
 @app.route("/dashboard")
 def dashboard():
@@ -182,18 +198,68 @@ def team_projects():
             project = Project(name=name, owner_id=session["user_id"], is_team=True)
             db.session.add(project)
             db.session.commit()
+            
+            # Add all users as members (per original logic structure)
             all_users = User.query.all()
             for user in all_users:
-                member = ProjectMember(project_id=project.id, user_id=user.id)
-                db.session.add(member)
+                existing = ProjectMember.query.filter_by(project_id=project.id, user_id=user.id).first()
+                if not existing:
+                    member = ProjectMember(project_id=project.id, user_id=user.id)
+                    db.session.add(member)
             db.session.commit()
+            return redirect(url_for("view_team_project", project_id=project.id)) # Redirect to new detail view
+            
     user_id = session["user_id"]
     member_project_ids = [pm.project_id for pm in ProjectMember.query.filter_by(user_id=user_id).all()]
     team_projects = Project.query.filter(Project.id.in_(member_project_ids), Project.is_team == True).all()
-    for p in team_projects:
-        p.tasks = Task.query.filter_by(project_id=p.id).all()
-        p.notes = Note.query.filter_by(project_id=p.id).all()
+    
     return render_template("team_projects.html", team_projects=team_projects)
+
+@app.route("/team-projects/<int:project_id>")
+def view_team_project(project_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    user_id = session["user_id"]
+    project = Project.query.get(project_id)
+    
+    # Check if the project is a team project and if the user is a member
+    is_member = ProjectMember.query.filter_by(project_id=project_id, user_id=user_id).first()
+    
+    if not project or not project.is_team or not is_member:
+        return "Access denied or Project not found", 403
+
+    # Fetch all necessary data for the detailed view
+    tasks = Task.query.filter_by(project_id=project_id).options(joinedload(Task.submitter_user), joinedload(Task.assignee)).all()
+    notes = Note.query.filter_by(project_id=project_id).all()
+    
+    # Fetch members, eagerly loading User details
+    memberships = ProjectMember.query.filter_by(project_id=project_id).options(joinedload(ProjectMember.user)).all()
+    members = [m.user for m in memberships]
+    
+    # Fetch recent chat messages and available users for invite
+    messages = Message.query.filter_by(project_id=project_id).options(joinedload(Message.sender)).order_by(Message.timestamp.desc()).limit(50).all()
+    
+    # Assign color classes to each user for chat display (replicated logic)
+    color_classes = ["text-primary", "text-success", "text-danger", "text-warning", "text-info"]
+    user_colors = {}
+    for msg in messages:
+        uid = msg.sender_id
+        if uid not in user_colors:
+            user_colors[uid] = color_classes[uid % len(color_classes)]
+    
+    all_users = User.query.all()
+    member_ids = {m.user_id for m in memberships}
+    joinable_users = [u for u in all_users if u.id not in member_ids]
+    
+    return render_template("view_team_project.html", 
+                           project=project, 
+                           tasks=tasks, 
+                           notes=notes, 
+                           members=members, 
+                           messages=messages,
+                           user_colors=user_colors,
+                           all_users=joinable_users)
+
 
 @app.route("/team-projects/<int:project_id>/upload", methods=["POST"])
 def upload_team_note(project_id):
@@ -211,7 +277,7 @@ def upload_team_note(project_id):
         note = Note(user_id=session["user_id"], project_id=project_id, filename=filename)
         db.session.add(note)
         db.session.commit()
-    return redirect(url_for("team_projects"))
+    return redirect(url_for("view_team_project", project_id=project_id, _anchor='files')) # Redirect to detailed view
 
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
@@ -236,13 +302,13 @@ def add_task(project_id):
         task = Task(
             title=title,
             project_id=project_id,
-            assigned_to=session["user_id"],
+            assigned_to=session["user_id"], # Assigning to creator by default
             due_date=due_date
         )
         db.session.add(task)
         db.session.commit()
 
-    return redirect(url_for("team_projects"))
+    return redirect(url_for("view_team_project", project_id=project_id, _anchor='tasks')) # Redirect to detailed view
 
 @app.route("/submit-task/<int:task_id>", methods=["POST"])
 def submit_task(task_id):
@@ -252,48 +318,29 @@ def submit_task(task_id):
     task = Task.query.get(task_id)
     if not task:
         return "Task not found", 404
+        
+    # Added check to ensure the task belongs to a project the user is a member of
+    is_member = ProjectMember.query.filter_by(project_id=task.project_id, user_id=session["user_id"]).first()
+    if not is_member and task.project.owner_id != session["user_id"]: # Also allow owner
+        return "Access denied to submit task", 403
 
     task.submitted = True
     task.submitted_at = datetime.utcnow()
     task.submitted_by = session["user_id"]
     db.session.commit()
+    
+    submitter = User.query.get(session["user_id"])
+    
+    # Emit a global broadcast for the change for live update
+    socketio.emit('task_submitted', {
+        'task_id': task.id,
+        'project_id': task.project_id,
+        'submitter_username': submitter.username,
+        'submitted_at_date': task.submitted_at.strftime('%Y-%m-%d')
+    }, broadcast=True)
 
-    return redirect(url_for("team_projects"))
+    return redirect(url_for("view_team_project", project_id=task.project_id, _anchor='tasks')) # Redirect to detailed view
 
-
-@app.route("/chat/<int:project_id>", methods=["GET", "POST"])
-def chat(project_id):
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    project = Project.query.get(project_id)
-    if not project:
-        return "Project not found", 404
-
-    is_member = ProjectMember.query.filter_by(project_id=project_id, user_id=session["user_id"]).first()
-    if not is_member:
-        return "Access denied", 403
-
-    if request.method == "POST":
-        text = request.form["text"].strip()
-        if text:
-            msg = Message(sender_id=session["user_id"], project_id=project_id, text=text)
-            db.session.add(msg)
-            db.session.commit()
-        return redirect(url_for("chat", project_id=project_id))
-
-    messages = Message.query.filter_by(project_id=project_id).order_by(Message.timestamp.desc()).limit(50).all()
-
-    # Assign color classes to each user
-    color_classes = ["text-primary", "text-success", "text-danger", "text-warning", "text-info"]
-    user_colors = {}
-    for msg in messages:
-        uid = msg.sender_id
-        if uid not in user_colors:
-            # Note: This logic must be replicated in the handle_send_message function for real-time updates
-            user_colors[uid] = color_classes[uid % len(color_classes)]
-
-    return render_template("chat.html", project=project, messages=messages, user_colors=user_colors)
 
 @app.route("/projects/<int:project_id>/invite", methods=["POST"])
 def invite_member(project_id):
@@ -301,13 +348,21 @@ def invite_member(project_id):
         return redirect(url_for("login"))
     username = request.form["username"]
     user = User.query.filter_by(username=username).first()
-    if user:
+    project = Project.query.get(project_id)
+    
+    if user and project:
         existing = ProjectMember.query.filter_by(project_id=project_id, user_id=user.id).first()
         if not existing:
             member = ProjectMember(project_id=project_id, user_id=user.id)
             db.session.add(member)
             db.session.commit()
-    return redirect(url_for("view_project", project_id=project_id))
+    
+    if project.is_team:
+        # Redirect to the new team project view
+        return redirect(url_for("view_team_project", project_id=project_id, _anchor='team'))
+    else:
+        # Keep old redirect for personal projects
+        return redirect(url_for("view_project", project_id=project_id))
 
 # 🌟 FIX: Real-time chat handler corrected to include username and color class
 @socketio.on('send_message')
