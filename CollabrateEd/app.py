@@ -1,11 +1,11 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory, g
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 from models import db, User, Project, ProjectMember, Task, Note, Message
 from datetime import datetime
 from werkzeug.utils import secure_filename
-from sqlalchemy.orm import joinedload # <--- FIX: ADDED THIS IMPORT
+from sqlalchemy.orm import joinedload # <--- FIX: ADDED THIS IMPORT AND USED BELOW
 
 # Ensure instance folder exists
 instance_path = os.path.join(os.path.dirname(__file__), 'instance')
@@ -26,6 +26,19 @@ os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 db.init_app(app)
 CORS(app)
 socketio = SocketIO(app)
+
+# --- FIX: Load user before every request to populate g.user for base.html ---
+@app.before_request
+def load_logged_in_user():
+    """Loads the logged-in user from the database and sets it on the Flask 'g' object."""
+    user_id = session.get("user_id")
+    if user_id is None:
+        g.user = None
+    else:
+        # Load user object from the database for use in templates (e.g., base.html)
+        g.user = User.query.get(user_id)
+# ----------------------------------------------------------------------------
+
 
 def create_tables():
     with app.app_context():
@@ -80,8 +93,12 @@ def dashboard():
     all_tasks = Task.query.filter(Task.project_id.in_(all_project_ids)).order_by(Task.due_date).all()
     
     # Filter for pending tasks assigned to the user
-    # FIXED: Use joinedload(Task.project) to eagerly fetch the Project object
-    pending_tasks = Task.query.options(joinedload(Task.project)).filter(
+    # FIX: Use joinedload to eagerly fetch the Project, Assignee, and Submitter User objects
+    pending_tasks = Task.query.options(
+        joinedload(Task.project), 
+        joinedload(Task.assignee),
+        joinedload(Task.submitter_user)
+    ).filter(
         Task.project_id.in_(all_project_ids),
         Task.submitted == False,
         Task.assigned_to == user.id # assuming tasks created in a team project are assigned to the creator by default
