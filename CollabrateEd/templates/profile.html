@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h4 class="mb-4">Your Profile</h4>
+<p><strong>Username:</strong> {{ user.username }}</p>
+<h5 class="mt-4">Projects You’ve Joined</h5>
+<ul class="list-group">
+  {% for project in projects %}
+    <li class="list-group-item">{{ project.name }}</li>
+  {% else %}
+    <li class="list-group-item text-muted">You haven’t joined any projects yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

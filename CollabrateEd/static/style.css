@@ -1,0 +1,98 @@
+/* CollabrateEd/static/style.css */
+
+/* 1. Root Variables & Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+:root {
+  --primary-color: #4A90E2; /* A professional, modern blue */
+  --dark-color: #222B36;    /* A deep navy/charcoal */
+  --light-color: #FFFFFF;
+  --bg-color: #F4F7F6;     /* A very light grey/off-white */
+  --border-color: #EAEAEA;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--bg-color);
+  color: #333;
+}
+
+/* 2. Login & Register Pages */
+.login-bg {
+  background-color: var(--bg-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background-color: var(--light-color);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.brand-title {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* 3. Main App Layout (from base.html) */
+.sidebar {
+  width: 260px;
+  min-height: 100vh;
+  background-color: var(--light-color);
+  border-right: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar .nav-link {
+  color: #555;
+  font-weight: 500;
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+.sidebar .nav-link:hover {
+  background-color: #f1f3f5;
+  color: var(--primary-color);
+}
+.sidebar .nav-link .bi {
+  margin-right: 12px;
+  font-size: 1.1rem;
+}
+.sidebar h4 {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.main-panel {
+  background-color: var(--bg-color);
+}
+
+/* 4. Custom Components */
+.card {
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+/* A custom header to replace bg-primary, etc. */
+.card-header-custom {
+  background-color: var(--light-color);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--primary-color);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+/* Override default Bootstrap Button */
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+.btn-primary:hover {
+  opacity: 0.9;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}

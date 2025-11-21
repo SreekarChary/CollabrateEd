@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="mb-4">Welcome, {{ user.username }}</h2>
+
+<div class="row g-4">
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header card-header-custom">Team Chats</div>
+      <div class="card-body">
+        {% if messages %}
+          <ul class="list-group">
+            {% for msg in messages %}
+              <li class="list-group-item">
+                <strong>{{ msg.sender.username }}:</strong> {{ msg.text }}
+                {% if msg.timestamp %}
+                  <span class="text-muted float-end" style="font-size: 0.85em;">{{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted">No Team Chat Available</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header card-header-custom">Your Projects</div>
+      <div class="card-body">
+        {% if personal_projects %}
+          <ul class="list-group">
+            {% for project in personal_projects %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <a href="{{ url_for('view_project', project_id=project.id) }}">{{ project.name }}</a>
+                {% if project.is_team %}
+                  <span class="badge bg-primary">Team</span>
+                {% else %}
+                  <span class="badge bg-secondary">Personal</span>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted">Manage from your profile.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header card-header-custom">Projects You Can Join</div>
+      <div class="card-body">
+        {% if joinable_projects %}
+          <ul class="list-group">
+            {% for project in joinable_projects %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ project.name }}
+                <form method="POST" action="{{ url_for('join_project', project_id=project.id) }}">
+                  <button type="submit" class="btn btn-sm btn-outline-primary">Join</button>
+                </form>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted">None now.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

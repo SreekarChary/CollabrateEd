@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h4 class="mb-4">Your Personal Project: {{ project.name }}</h4>
+
+<form method="POST" action="{{ url_for('upload_personal_note', project_id=project.id) }}" enctype="multipart/form-data" class="mb-4">
+  <label class="form-label">Upload your personal notes (PDF/DOC)</label>
+  <input type="file" name="file" class="form-control mb-2" required>
+  <button type="submit" class="btn btn-success">Upload</button>
+</form>
+
+<h5>Your Uploaded Notes</h5>
+<ul class="list-group mb-4">
+  {% for note in project.notes %}
+    <li class="list-group-item">
+      <a href="{{ url_for('uploaded_file', filename=note.filename) }}" target="_blank">{{ note.filename }}</a>
+    </li>
+  {% else %}
+    <li class="list-group-item text-muted">No notes uploaded yet.</li>
+  {% endfor %}
+</ul>
+
+<div class="alert alert-info">Chat is only available for team projects.</div>
+
+{% endblock %}

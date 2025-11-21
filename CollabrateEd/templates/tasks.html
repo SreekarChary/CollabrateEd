@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h4 class="mb-4">{{ project.name }}</h4>
+
+{% if is_team_project %}
+  <form method="POST" action="/tasks/{{ project.id }}" class="input-group mb-4">
+    <input name="title" class="form-control" placeholder="New task" required>
+    <button class="btn btn-primary">Add Task</button>
+  </form>
+
+  <ul class="list-group mb-4">
+    {% for task in tasks %}
+      <li class="list-group-item">{{ task.title }}</li>
+    {% else %}
+      <li class="list-group-item text-muted">No tasks yet.</li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <div class="alert alert-warning">Tasks are only available for team projects.</div>
+{% endif %}
+
+<h5 class="mb-3">Team Members</h5>
+<ul class="list-group mb-4">
+  {% for member in members %}
+    <li class="list-group-item">{{ member.username }}</li>
+  {% else %}
+    <li class="list-group-item text-muted">No members yet.</li>
+  {% endfor %}
+</ul>
+
+<h5 class="mb-3">Invite More Members</h5>
+<form method="POST" action="/projects/{{ project.id }}/invite" class="input-group mb-4">
+  <select name="username" class="form-select" required>
+    {% for user in all_users %}
+      <option value="{{ user.username }}">{{ user.username }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn btn-primary">Invite</button>
+</form>
+
+{% endblock %}
