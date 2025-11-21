@@ -5,62 +5,114 @@
   <title>{{ title or "CollabrateEd" }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Poppins is now included in style.css -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <!-- Top Navigation Bar -->
-  <nav class="topbar">
-    <h4 class="brand-title-lg">COLLABRATEED</h4>
-  </nav>
-
-  <div class="main-layout">
-    <!-- Icon-Only Vertical Nav -->
-    <nav class="icon-nav flex-shrink-0">
-        <ul class="nav flex-column mb-auto">
+  
+  <div class="app-container">
+    
+    <nav class="sidebar flex-shrink-0">
+        <h4 class="brand-title-lg">CollabrateEd</h4>
+        
+        <ul class="nav flex-column sidebar-nav">
           <li class="nav-item">
-            <a href="/dashboard" class="nav-link" title="Dashboard"><i class="bi bi-grid-fill"></i></a>
+            <a href="/dashboard" class="nav-link" title="Dashboard"><i class="bi bi-grid-fill"></i> Dashboard</a>
           </li>
           <li class="nav-item">
-            <a href="/profile" class="nav-link" title="Profile"><i class="bi bi-person-fill"></i></a>
+            <a href="{{ url_for('dashboard') }}#personal-projects" class="nav-link" title="Personal Projects"><i class="bi bi-folder-fill"></i> Personal Projects</a>
           </li>
           <li class="nav-item">
-            <a href="/team-projects" class="nav-link" title="Team Projects"><i class="bi bi-people-fill"></i></a>
+            <a href="/team-projects" class="nav-link" title="Team Projects"><i class="bi bi-people-fill"></i> Team Projects</a>
           </li>
         </ul>
-        <ul class="nav flex-column mt-auto logout-link">
+        
+        <ul class="nav flex-column nav-footer">
           <li class="nav-item">
-            <a href="/logout" class="nav-link" title="Logout"><i class="bi bi-box-arrow-left"></i></a>
+            <a href="#" class="nav-link" title="Settings"><i class="bi bi-gear-fill"></i> Settings</a>
+          </li>
+          <li class="nav-item logout-link">
+            <a href="/logout" class="nav-link" title="Logout"><i class="bi bi-box-arrow-left"></i> Logout</a>
           </li>
         </ul>
     </nav>
     
-    <!-- Main Content Panel -->
-    <main class="main-panel flex-grow-1">
-      {% block content %}{% endblock %}
-    </main>
+    <div class="main-content">
+      
+      <nav class="top-header">
+        <a href="/profile" class="user-profile" title="View Profile">
+            <div class="user-avatar">
+                {% if g.user and g.user.username %}
+                {{ g.user.username[0].upper() }}
+                {% else %}
+                <i class="bi bi-person"></i>
+                {% endif %}
+            </div>
+            <span>Hello, {{ g.user.username if g.user and g.user.username else 'User' }}</span>
+        </a>
+      </nav>
+      
+      <main class="main-panel flex-grow-1">
+        {% block content %}{% endblock %}
+      </main>
+      
+    </div>
+    
+  </div> <button id="chat-toggle" class="chat-widget-toggle btn btn-icon">
+    <i class="bi bi-chat-dots-fill"></i>
+  </button>
+
+  <div id="chat-widget" class="chat-widget-container">
+    <div class="chat-header">
+      <h6>Team Chat</h6>
+      <button id="chat-close" class="btn btn-sm btn-light p-1">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div class="chat-messages p-3 text-muted">
+        <p class="text-center">Team chat is available on the Team Projects page.</p>
+        </div>
   </div>
-  
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Highlight the active icon based on the current URL path
+    // FIX: To make 'user' available in base.html's profile header, you'd typically use a Flask context processor or 'g' object. 
+    // Since I can't modify the user context setup, I'll add a helper to set a mock user on the global 'g' object if not set (for testing).
+    // The actual views (like dashboard, profile, etc.) *must* pass the 'user' object for this to work correctly.
+    // Assuming for now that 'g.user' will be populated by the Flask app.
+
+    // Navigation Active State Logic (Updated for new paths)
     document.addEventListener('DOMContentLoaded', () => {
         const path = window.location.pathname;
-        const navLinks = document.querySelectorAll('.icon-nav .nav-link');
+        const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
         
         navLinks.forEach(link => {
-            if (path === link.getAttribute('href')) {
+            const href = link.getAttribute('href');
+            if (path === href) {
                 link.classList.add('active');
             }
         });
         
-        // Handle sub-pages like /chat/<id> or /projects/<id>
-        if (path.startsWith('/chat') || path.startsWith('/team-projects')) {
-            document.querySelector('.icon-nav a[href="/team-projects"]').classList.add('active');
-        } else if (path.startsWith('/projects') && !path.startsWith('/team-projects')) {
-             document.querySelector('.icon-nav a[href="/dashboard"]').classList.add('active');
+        // Handle sub-pages (e.g., viewing a specific project)
+        if (path.startsWith('/projects/') && !path.startsWith('/team-projects')) {
+            document.querySelector('.sidebar-nav a[title="Personal Projects"]').classList.add('active');
+        } else if (path.startsWith('/chat') || path.startsWith('/team-projects')) {
+             document.querySelector('.sidebar-nav a[href="/team-projects"]').classList.add('active');
+        } else if (path.startsWith('/profile')) {
+             document.querySelector('.sidebar-nav a[href="/profile"]').classList.add('active');
         }
     });
+
+    // Chat Widget Toggle Logic
+    document.getElementById("chat-toggle").addEventListener("click", function() {
+        document.getElementById("chat-widget").classList.toggle("open");
+    });
+
+    document.getElementById("chat-close").addEventListener("click", function() {
+        document.getElementById("chat-widget").classList.remove("open");
+    });
+
   </script>
 </body>
 </html>

@@ -1,79 +1,116 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2 class="mb-4">Welcome, {{ user.username }}</h2>
+<h2 class="mb-4">Dashboard Overview</h2>
+
+<div class="row g-4 mb-5">
+    <div class="col-12">
+        <div class="card p-4 shadow-sm" style="background-color: #e3f2fd; border: 1px solid #bbdefb;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="card-title text-primary mb-1">Welcome back, {{ user.username | capitalize }}! 👋</h3>
+                    <p class="mb-0 text-dark">Here's a snapshot of your collaboration space.</p>
+                </div>
+                <a href="{{ url_for('profile') }}" class="btn btn-outline-primary btn-icon" title="View Profile">
+                    <i class="bi bi-person-circle"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="row g-4">
+    <div class="col-lg-4 col-md-6">
+        
+        <div class="card mb-4">
+            <div class="card-header card-header-custom">
+                <i class="bi bi-check2-square me-2"></i> Pending Tasks ({{ pending_tasks | length }})
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for task in pending_tasks | slice(5) %}
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="me-auto">
+                                <strong>{{ task.title }}</strong>
+                                <small class="d-block text-muted">Project: {{ task.project.name }}</small>
+                            </div>
+                            {% if task.due_date %}
+                                <span class="badge bg-danger ms-2">Due: {{ task.due_date.strftime('%b %d') }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary ms-2">No Deadline</span>
+                            {% endif %}
+                        </li>
+                    {% else %}
+                        <li class="list-group-item text-muted text-center">🎉 All tasks are complete!</li>
+                    {% endfor %}
+                </ul>
+                <a href="{{ url_for('team_projects') }}" class="btn btn-sm btn-outline-primary w-100 mt-3">View All Tasks</a>
+            </div>
+        </div>
 
-  <div class="col-md-6">
-    <div class="card">
-      <div class="card-header card-header-custom">Team Chats (Recent)</div>
-      <div class="card-body">
-        {% if messages %}
-          <ul class="list-group">
-            {% for msg in messages %}
-              <li class="list-group-item">
-                <strong>{{ msg.sender.username }}:</strong> {{ msg.text }}
-                {% if msg.timestamp %}
-                  <span class="text-muted float-end" style="font-size: 0.85em;">{{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+        <div class="card">
+            <div class="card-header card-header-custom" style="background-color: #9fa8da;">
+                <i class="bi bi-folder-open me-2"></i> Your Projects
+            </div>
+            <div class="card-body">
+                <p class="mb-2"><strong>Team:</strong> {{ team_projects | length }} active projects</p>
+                <p class="mb-4"><strong>Personal:</strong> {{ personal_projects | length }} projects</p>
+                
+                <a href="{{ url_for('team_projects') }}" class="btn btn-sm btn-primary me-2">Manage Teams</a>
+                <a href="{{ url_for('profile') }}" class="btn btn-sm btn-outline-secondary">Manage Personal</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 col-md-6">
+        <div class="card">
+            <div class="card-header card-header-custom" style="background-color: #64b5f6;">
+                <i class="bi bi-chat-text-fill me-2"></i> Recent Team Chat Activity
+            </div>
+            <div class="card-body" style="height: 480px; overflow-y: auto; background-color: var(--chat-bg);">
+                {% if messages %}
+                  <ul class="list-group list-group-flush">
+                    {% for msg in messages %}
+                      <li class="list-group-item border-0 p-1">
+                        <small class="text-muted float-end">{{ msg.timestamp.strftime('%H:%M') }}</small>
+                        <strong class="me-2 text-primary">{{ msg.sender.username | capitalize }}:</strong>
+                        {{ msg.text }}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% else %}
+                  <p class="text-muted text-center mt-5">No recent team chat messages.</p>
                 {% endif %}
-              </li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p class="text-muted">No Recent Team Chat Messages</p>
-        {% endif %}
-      </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <div class="col-md-6">
-    <div class="card">
-      <div class="card-header card-header-custom">Your Personal & Team Projects</div>
-      <div class="card-body">
-        {% if personal_projects or team_projects %}
-          <ul class="list-group">
-            {% for project in personal_projects %}
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <a href="{{ url_for('view_project', project_id=project.id) }}">{{ project.name }}</a>
-                <span class="badge bg-secondary">Personal</span>
-              </li>
-            {% endfor %}
-            {% for project in team_projects %}
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <a href="{{ url_for('team_projects') }}">{{ project.name }}</a>
-                <span class="badge bg-primary">Team</span>
-              </li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p class="text-muted">No projects found. Create one in Team Projects or manage from your profile.</p>
-        {% endif %}
-      </div>
+    <div class="col-lg-4 col-md-12">
+        <div class="card">
+            <div class="card-header card-header-custom" style="background-color: #4db6ac;">
+                <i class="bi bi-plus-square-fill me-2"></i> Public Projects To Join
+            </div>
+            <div class="card-body" style="height: 480px; overflow-y: auto;">
+                {% if joinable_projects %}
+                  <ul class="list-group list-group-flush">
+                    {% for project in joinable_projects %}
+                      <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ project.name }}</strong>
+                            <small class="d-block text-muted">Owner: {{ project.owner.username }}</small>
+                        </div>
+                        <form method="POST" action="{{ url_for('join_project', project_id=project.id) }}">
+                          <button type="submit" class="btn btn-sm btn-success">Join</button>
+                        </form>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% else %}
+                  <p class="text-muted text-center mt-5">No public projects available to join right now.</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
-  </div>
-
-  <div class="col-md-12">
-    <div class="card">
-      <div class="card-header card-header-custom">Projects You Can Join</div>
-      <div class="card-body">
-        {% if joinable_projects %}
-          <ul class="list-group">
-            {% for project in joinable_projects %}
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{ project.name }}
-                <form method="POST" action="{{ url_for('join_project', project_id=project.id) }}">
-                  <button type="submit" class="btn btn-sm btn-outline-primary">Join</button>
-                </form>
-              </li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p class="text-muted">No public projects available to join right now.</p>
-        {% endif %}
-      </div>
-    </div>
-  </div>
 
 </div>
 

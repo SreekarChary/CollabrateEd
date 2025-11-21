@@ -5,6 +5,7 @@ from flask_socketio import SocketIO, emit
 from models import db, User, Project, ProjectMember, Task, Note, Message
 from datetime import datetime
 from werkzeug.utils import secure_filename
+from sqlalchemy.orm import joinedload # <--- FIX: ADDED THIS IMPORT
 
 # Ensure instance folder exists
 instance_path = os.path.join(os.path.dirname(__file__), 'instance')
@@ -72,10 +73,23 @@ def dashboard():
 
     personal_projects = []
     team_projects = []
+    all_project_ids = [p.id for p in projects]
+    
+    # New: Fetch user's tasks and pending tasks
+    # Fetch all tasks from projects the user is a member of (Team & Personal)
+    all_tasks = Task.query.filter(Task.project_id.in_(all_project_ids)).order_by(Task.due_date).all()
+    
+    # Filter for pending tasks assigned to the user
+    # FIXED: Use joinedload(Task.project) to eagerly fetch the Project object
+    pending_tasks = Task.query.options(joinedload(Task.project)).filter(
+        Task.project_id.in_(all_project_ids),
+        Task.submitted == False,
+        Task.assigned_to == user.id # assuming tasks created in a team project are assigned to the creator by default
+    ).order_by(Task.due_date).all()
 
     for p in projects:
         member_count = ProjectMember.query.filter_by(project_id=p.id).count()
-        if member_count == total_users:
+        if p.is_team: # Use is_team flag instead of member count comparison
             team_projects.append(p)
         elif p.owner_id == user.id:
             personal_projects.append(p)
@@ -89,7 +103,8 @@ def dashboard():
                            personal_projects=personal_projects,
                            team_projects=team_projects,
                            messages=messages,
-                           joinable_projects=joinable_projects)
+                           joinable_projects=joinable_projects,
+                           pending_tasks=pending_tasks) # Passed pending tasks
 
 @app.route("/projects/<int:project_id>/join", methods=["POST"])
 def join_project(project_id):
